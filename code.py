@@ -1,231 +1,251 @@
 import streamlit as st
 
-# 単位換算の基本情報と問題・解説
-UNIT_INFO = {
-    "長さ (m)": {
-        "基本単位": "m (メートル)",
-        "例": [
-            "1 km = 1000 m (1キロメートル は 1000メートル)",
-            "1 m = 100 cm (1メートル は 100センチメートル)",
-            "1 cm = 10 mm (1センチメートル は 10ミリメートル)"
-        ],
-        "問題": [
-            {"q": "2 km は なん m ？", "a": "2000 m", "exp": "1 km は 1000 m です。だから、2 km は 2 × 1000 = 2000 m になります。"},
-            {"q": "500 cm は なん m ？", "a": "5 m", "exp": "100 cm は 1 m です。だから、500 cm は 500 ÷ 100 = 5 m になります。"},
-            {"q": "3 m は なん cm ？", "a": "300 cm", "exp": "1 m は 100 cm です。だから、3 m は 3 × 100 = 300 cm になります。"},
-            {"q": "1500 m は なん km ？", "a": "1.5 km", "exp": "1000 m は 1 km です。だから、1500 m は 1500 ÷ 1000 = 1.5 km になります。"},
-            {"q": "70 mm は なん cm ？", "a": "7 cm", "exp": "10 mm は 1 cm です。だから、70 mm は 70 ÷ 10 = 7 cm になります。"},
-            {"q": "25 cm は なん mm ？", "a": "250 mm", "exp": "1 cm は 10 mm です。だから、25 cm は 25 × 10 = 250 mm になります。"},
-            {"q": "0.5 km は なん m ？", "a": "500 m", "exp": "1 km は 1000 m です。0.5 は半分という意味なので、1000 m の半分は 500 m です。計算では 0.5 × 1000 = 500 m になります。"},
-            {"q": "1 m 20 cm は なん cm ？", "a": "120 cm", "exp": "1 m は 100 cm です。だから、1 m 20 cm は 100 cm + 20 cm = 120 cm になります。"},
-            {"q": "3 km 50 m は なん m ？", "a": "3050 m", "exp": "1 km は 1000 m です。だから、3 km は 3000 m。それに 50 m をたすと 3000 m + 50 m = 3050 m になります。"},
-            {"q": "2500 cm は なん m ？", "a": "25 m", "exp": "100 cm は 1 m です。だから、2500 cm は 2500 ÷ 100 = 25 m になります。"},
-            {"q": "50000 m は なん km ？", "a": "50 km", "exp": "1000 m は 1 km です。だから、50000 m は 50000 ÷ 1000 = 50 km になります。"},
-            {"q": "1.2 m は なん cm ？", "a": "120 cm", "exp": "1 m は 100 cm です。だから、1.2 m は 1.2 × 100 = 120 cm になります。"},
-        ]
-    },
-    "重さ (g)": {
-        "基本単位": "g (グラム)",
-        "例": [
-            "1 kg = 1000 g (1キログラム は 1000グラム)",
-            "1 t = 1000 kg (1トン は 1000キログラム)"
-        ],
-        "問題": [
-            {"q": "3 kg は なん g ？", "a": "3000 g", "exp": "1 kg は 1000 g です。だから、3 kg は 3 × 1000 = 3000 g になります。"},
-            {"q": "7000 g は なん kg ？", "a": "7 kg", "exp": "1000 g は 1 kg です。だから、7000 g は 7000 ÷ 1000 = 7 kg になります。"},
-            {"q": "0.5 kg は なん g ？", "a": "500 g", "exp": "1 kg は 1000 g です。0.5 は半分という意味なので、1000 g の半分は 500 g です。計算では 0.5 × 1000 = 500 g になります。"},
-            {"q": "2 t は なん kg ？", "a": "2000 kg", "exp": "1 t は 1000 kg です。だから、2 t は 2 × 1000 = 2000 kg になります。"},
-            {"q": "1500 kg は なん t ？", "a": "1.5 t", "exp": "1000 kg は 1 t です。だから、1500 kg は 1500 ÷ 1000 = 1.5 t になります。"},
-            {"q": "2.5 kg は なん g ？", "a": "2500 g", "exp": "1 kg は 1000 g です。だから、2.5 kg は 2.5 × 1000 = 2500 g になります。"},
-            {"q": "600 g は なん kg ？", "a": "0.6 kg", "exp": "1000 g は 1 kg です。だから、600 g は 600 ÷ 1000 = 0.6 kg になります。"},
-            {"q": "0.3 t は なん kg ？", "a": "300 kg", "exp": "1 t は 1000 kg です。だから、0.3 t は 0.3 × 1000 = 300 kg になります。"},
-            {"q": "1 kg 200 g は なん g ？", "a": "1200 g", "exp": "1 kg は 1000 g です。だから、1 kg 200 g は 1000 g + 200 g = 1200 g になります。"},
-            {"q": "3500 g は なん kg なん g ？", "a": "3 kg 500 g", "exp": "1000 g は 1 kg です。3500 g の中に 1000 g は 3つあるので 3 kg。残りは 500 g です。"},
-            {"q": "4000 kg は なん t ？", "a": "4 t", "exp": "1000 kg は 1 t です。だから、4000 kg は 4000 ÷ 1000 = 4 t になります。"},
-            {"q": "1.05 kg は なん g ？", "a": "1050 g", "exp": "1 kg は 1000 g です。だから、1.05 kg は 1.05 × 1000 = 1050 g になります。"},
-        ]
-    },
-    "かさ (L)": {
-        "基本単位": "L (リットル)",
-        "例": [
-            "1 L = 1000 mL (1リットル は 1000ミリリットル)",
-            "1 L = 10 dL (1リットル は 10デシリットル)",
-            "1 dL = 100 mL (1デシリットル は 100ミリリットル)"
-        ],
-        "問題": [
-            {"q": "4 L は なん mL ？", "a": "4000 mL", "exp": "1 L は 1000 mL です。だから、4 L は 4 × 1000 = 4000 mL になります。"},
-            {"q": "3000 mL は なん L ？", "a": "3 L", "exp": "1000 mL は 1 L です。だから、3000 mL は 3000 ÷ 1000 = 3 L になります。"},
-            {"q": "0.8 L は なん mL ？", "a": "800 mL", "exp": "1 L は 1000 mL です。だから、0.8 L は 0.8 × 1000 = 800 mL になります。"},
-            {"q": "5 L は なん dL ？", "a": "50 dL", "exp": "1 L は 10 dL です。だから、5 L は 5 × 10 = 50 dL になります。"},
-            {"q": "70 dL は なん L ？", "a": "7 L", "exp": "10 dL は 1 L です。だから、70 dL は 70 ÷ 10 = 7 L になります。"},
-            {"q": "1.5 L は なん mL ？", "a": "1500 mL", "exp": "1 L は 1000 mL です。だから、1.5 L は 1.5 × 1000 = 1500 mL になります。"},
-            {"q": "250 mL は なん dL ？", "a": "2.5 dL", "exp": "100 mL は 1 dL です。だから、250 mL は 250 ÷ 100 = 2.5 dL になります。"},
-            {"q": "0.3 dL は なん mL ？", "a": "30 mL", "exp": "1 dL は 100 mL です。だから、0.3 dL は 0.3 × 100 = 30 mL になります。"},
-            {"q": "2 L 500 mL は なん mL ？", "a": "2500 mL", "exp": "1 L は 1000 mL です。だから、2 L は 2000 mL。それに 500 mL をたすと 2000 mL + 500 mL = 2500 mL になります。"},
-            {"q": "12 dL は なん L なん dL ？", "a": "1 L 2 dL", "exp": "10 dL は 1 L です。12 dL の中に 10 dL は 1つあるので 1 L。残りは 2 dL です。"},
-            {"q": "600 mL は なん L ？", "a": "0.6 L", "exp": "1000 mL は 1 L です。だから、600 mL は 600 ÷ 1000 = 0.6 L になります。"},
-            {"q": "3.2 L は なん dL ？", "a": "32 dL", "exp": "1 L は 10 dL です。だから、3.2 L は 3.2 × 10 = 32 dL になります。"},
-        ]
-    },
-    "面積 (m²)": {
-        "基本単位": "m² (平方メートル)",
-        "例": [
-            "1 km² = 1000000 m² (1平方キロメートル は 100万平方メートル)",
-            "1 m² = 10000 cm² (1平方メートル は 1万平方センチメートル)",
-            "1 a = 100 m² (1アール は 100平方メートル)",
-            "1 ha = 10000 m² (1ヘクタール は 1万平方メートル)",
-            "1 ha = 100 a (1ヘクタール は 100アール)"
-        ],
-        "問題": [
-            {"q": "3 m² は なん cm² ？", "a": "30000 cm²", "exp": "1 m² は 10000 cm² です。だから、3 m² は 3 × 10000 = 30000 cm² になります。"},
-            {"q": "50000 cm² は なん m² ？", "a": "5 m²", "exp": "10000 cm² は 1 m² です。だから、50000 cm² は 50000 ÷ 10000 = 5 m² になります。"},
-            {"q": "2 a は なん m² ？", "a": "200 m²", "exp": "1 a は 100 m² です。だから、2 a は 2 × 100 = 200 m² になります。"},
-            {"q": "7 ha は なん m² ？", "a": "70000 m²", "exp": "1 ha は 10000 m² です。だから、7 ha は 7 × 10000 = 70000 m² になります。"},
-            {"q": "0.5 km² は なん m² ？", "a": "500000 m²", "exp": "1 km² は 1000000 m² です。だから、0.5 km² は 0.5 × 1000000 = 500000 m² になります。"},
-            {"q": "300 m² は なん a ？", "a": "3 a", "exp": "100 m² は 1 a です。だから、300 m² は 300 ÷ 100 = 3 a になります。"},
-            {"q": "40000 m² は なん ha ？", "a": "4 ha", "exp": "10000 m² は 1 ha です。だから、40000 m² は 40000 ÷ 10000 = 4 ha になります。"},
-            {"q": "1.2 m² は なん cm² ？", "a": "12000 cm²", "exp": "1 m² は 10000 cm² です。だから、1.2 m² は 1.2 × 10000 = 12000 cm² になります。"},
-            {"q": "25 a は なん ha ？", "a": "0.25 ha", "exp": "100 a は 1 ha です。だから、25 a は 25 ÷ 100 = 0.25 ha になります。"},
-            {"q": "2000000 m² は なん km² ？", "a": "2 km²", "exp": "1000000 m² は 1 km² です。だから、2000000 m² は 2000000 ÷ 1000000 = 2 km² になります。"},
-            {"q": "たて 10 m、よこ 20 m の長方形の畑の面積は なん m²？ なん a？", "a": "200 m², 2 a", "exp": "長方形の面積は たて × よこ で求めます。10 m × 20 m = 200 m² です。1 a は 100 m² なので、200 m² は 2 a です。"},
-            {"q": "1辺が 100 m の正方形の土地の面積は なん m²？ なん ha？", "a": "10000 m², 1 ha", "exp": "正方形の面積は 1辺 × 1辺 で求めます。100 m × 100 m = 10000 m² です。1 ha は 10000 m² なので、答えは 1 ha です。"},
-        ]
-    },
-    "体積 (m³) と かさ (L)": {
-        "基本単位": "m³ (立方メートル), L (リットル)",
-        "例": [
-            "1 m³ = 1000000 cm³ (1立方メートル は 100万立方センチメートル)",
-            "1 L = 1000 cm³ (1リットル は 1000立方センチメートル)",
-            "1 mL = 1 cm³ (1ミリリットル は 1立方センチメートル)",
-            "1 m³ = 1000 L (1立方メートル は 1000リットル)"
-        ],
-        "問題": [
-            {"q": "2 m³ は なん cm³ ？", "a": "2000000 cm³", "exp": "1 m³ は 1000000 cm³ です。だから、2 m³ は 2 × 1000000 = 2000000 cm³ になります。"},
-            {"q": "5000000 cm³ は なん m³ ？", "a": "5 m³", "exp": "1000000 cm³ は 1 m³ です。だから、5000000 cm³ は 5000000 ÷ 1000000 = 5 m³ になります。"},
-            {"q": "3 L は なん cm³ ？", "a": "3000 cm³", "exp": "1 L は 1000 cm³ です。だから、3 L は 3 × 1000 = 3000 cm³ になります。"},
-            {"q": "4000 cm³ は なん L ？", "a": "4 L", "exp": "1000 cm³ は 1 L です。だから、4000 cm³ は 4000 ÷ 1000 = 4 L になります。"},
-            {"q": "0.5 m³ は なん L ？", "a": "500 L", "exp": "1 m³ は 1000 L です。だから、0.5 m³ は 0.5 × 1000 = 500 L になります。"},
-            {"q": "250 mL は なん cm³ ？", "a": "250 cm³", "exp": "1 mL は 1 cm³ です。だから、250 mL は 250 cm³ になります。"},
-            {"q": "たて 2m, よこ 3m, 高さ 1m の直方体の水そうに入る水の体積は なん m³？ なん L？", "a": "6 m³, 6000 L", "exp": "直方体の体積は たて × よこ × 高さ で求めます。2m × 3m × 1m = 6 m³ です。1 m³ は 1000 L なので、6 m³ は 6000 L です。"},
-            {"q": "1辺が 10 cm の立方体の体積は なん cm³？ なん L？", "a": "1000 cm³, 1 L", "exp": "立方体の体積は 1辺 × 1辺 × 1辺 で求めます。10 cm × 10 cm × 10 cm = 1000 cm³ です。1000 cm³ は 1 L なので、答えは 1 L です。"},
-            {"q": "2000 L は なん m³ ？", "a": "2 m³", "exp": "1000 L は 1 m³ です。だから、2000 L は 2000 ÷ 1000 = 2 m³ になります。"},
-            {"q": "1500 cm³ は なん L なん mL ？", "a": "1 L 500 mL", "exp": "1000 cm³ は 1 L です。1500 cm³ の中に 1000 cm³ は 1つあるので 1 L。残りは 500 cm³ で、これは 500 mL です。"},
-            {"q": "0.01 m³ は なん L ？", "a": "10 L", "exp": "1 m³ は 1000 L です。だから、0.01 m³ は 0.01 × 1000 = 10 L になります。"},
-            {"q": "たて 50 cm, よこ 20 cm, 深さ 10 cm の水そうの容積は なん cm³？ なん L？", "a": "10000 cm³, 10 L", "exp": "容積は たて × よこ × 深さ で求めます。50 cm × 20 cm × 10 cm = 10000 cm³ です。1000 cm³ は 1 L なので、10000 cm³ は 10 L です。"},
-        ]
-    },
-    "時間": {
-        "基本単位": "秒 (びょう)",
-        "例": [
-            "1 分 = 60 秒",
-            "1 時間 = 60 分",
-            "1 時間 = 3600 秒 (60分 × 60秒)"
-        ],
-        "問題": [
-            {"q": "3 分 は なん 秒 ？", "a": "180 秒", "exp": "1 分 は 60 秒 です。だから、3 分 は 3 × 60 = 180 秒 になります。"},
-            {"q": "120 秒 は なん 分 ？", "a": "2 分", "exp": "60 秒 は 1 分 です。だから、120 秒 は 120 ÷ 60 = 2 分 になります。"},
-            {"q": "2 時間 は なん 分 ？", "a": "120 分", "exp": "1 時間 は 60 分 です。だから、2 時間 は 2 × 60 = 120 分 になります。"},
-            {"q": "90 分 は なん 時間 なん 分 ？", "a": "1 時間 30 分", "exp": "60 分 は 1 時間 です。90 分 の中に 60 分 は 1つあるので 1 時間。残りは 90 - 60 = 30 分 です。"},
-            {"q": "1 時間 は なん 秒 ？", "a": "3600 秒", "exp": "1 時間 は 60 分、1 分 は 60 秒 です。だから、1 時間 は 60 × 60 = 3600 秒 になります。"},
-            {"q": "7200 秒 は なん 時間 ？", "a": "2 時間", "exp": "3600 秒 は 1 時間 です。だから、7200 秒 は 7200 ÷ 3600 = 2 時間 になります。"},
-            {"q": "1.5 時間 は なん 分 ？", "a": "90 分", "exp": "1 時間 は 60 分 です。1.5 時間は 1時間と半分の時間なので、60分 + 30分 = 90 分。計算では 1.5 × 60 = 90 分 になります。"},
-            {"q": "45 分 は なん 時間 ？ (小数で)", "a": "0.75 時間", "exp": "1 時間 は 60 分 です。だから、45 分 は 45 ÷ 60 = 0.75 時間 になります。 (3/4 時間とも言えます)"},
-            {"q": "2 分 15 秒 は なん 秒 ？", "a": "135 秒", "exp": "1 分 は 60 秒 です。2 分 は 2 × 60 = 120 秒。それに 15 秒をたすと 120 + 15 = 135 秒 になります。"},
-            {"q": "150 分 は なん 時間 なん 分 ？", "a": "2 時間 30 分", "exp": "60 分 は 1 時間 です。150 分の中に 60 分は 2つあるので (60 × 2 = 120 分) 2 時間。残りは 150 - 120 = 30 分 です。"},
-            {"q": "1 日 は なん 時間 ？", "a": "24 時間", "exp": "これはおぼえておきましょう！1日は24時間です。"},
-            {"q": "360 分 は なん 時間 ？", "a": "6 時間", "exp": "60 分 は 1 時間 です。だから、360 分 は 360 ÷ 60 = 6 時間 になります。"},
-            {"q": "午前9時 から 午前11時30分 までは なん時間 なん分 ？", "a": "2 時間 30 分", "exp": "午前9時から午前11時までは2時間。そこからさらに30分なので、合わせて2時間30分です。"},
-            {"q": "100 秒 は なん分 なん秒 ？", "a": "1 分 40 秒", "exp": "60 秒で1分です。100秒の中に60秒は1つあるので1分。残りは 100 - 60 = 40 秒です。"},
-        ]
-    },
-    "速さ (時速・分速・秒速)": {
-        "基本単位": "km/時 (キロメートル毎時), m/分 (メートル毎分), m/秒 (メートル毎秒)",
-        "例": [
-            "時速 60 km とは、1時間に 60 km 進む速さのことです。",
-            "速さ × 時間 = 道のり",
-            "道のり ÷ 速さ = 時間",
-            "道のり ÷ 時間 = 速さ"
-        ],
-        "問題": [
-            # 時速と分速
-            {"q": "時速 36 km は 分速 なん m ？", "a": "分速 600 m", "exp": "1 km = 1000 m、1 時間 = 60 分。時速 36 km は、60分で 36000 m 進む速さです。だから、1分あたりでは 36000 m ÷ 60 分 = 600 m/分。"},
-            {"q": "分速 500 m は 時速 なん km ？", "a": "時速 30 km", "exp": "1 分で 500 m 進むので、60分 (1時間) では 500 m × 60 = 30000 m 進みます。30000 m は 30 km なので、時速 30 km です。"},
-            # 時速と秒速
-            {"q": "時速 72 km は 秒速 なん m ？", "a": "秒速 20 m", "exp": "1 km = 1000 m、1 時間 = 3600 秒。時速 72 km は、3600秒で 72000 m 進む速さです。だから、1秒あたりでは 72000 m ÷ 3600 秒 = 20 m/秒。"},
-            {"q": "秒速 15 m は 時速 なん km ？", "a": "時速 54 km", "exp": "1 秒で 15 m 進むので、3600秒 (1時間) では 15 m × 3600 = 54000 m 進みます。54000 m は 54 km なので、時速 54 km です。"},
-            # 道のり = 速さ × 時間
-            {"q": "時速 40 km で 2 時間進むと、道のりは なん km ？", "a": "80 km", "exp": "道のり = 速さ × 時間 です。時速 40 km × 2 時間 = 80 km。"},
-            {"q": "分速 60 m で 10 分進むと、道のりは なん m ？", "a": "600 m", "exp": "道のり = 速さ × 時間 です。分速 60 m × 10 分 = 600 m。"},
-            {"q": "秒速 5 m で 1 分間走ると、道のりは なん m ？", "a": "300 m", "exp": "まず時間を秒に直します。1 分 = 60 秒。道のり = 速さ × 時間 なので、秒速 5 m × 60 秒 = 300 m。"},
-            # 時間 = 道のり ÷ 速さ
-            {"q": "120 km の道のりを 時速 60 km で進むと、かかる時間は なん 時間 ？", "a": "2 時間", "exp": "時間 = 道のり ÷ 速さ です。120 km ÷ 時速 60 km = 2 時間。"},
-            {"q": "1500 m の道のりを 分速 300 m で進むと、かかる時間は なん 分 ？", "a": "5 分", "exp": "時間 = 道のり ÷ 速さ です。1500 m ÷ 分速 300 m = 5 分。"},
-            {"q": "1 km の道のりを 秒速 10 m で走ると、かかる時間は なん 秒 ？", "a": "100 秒", "exp": "まず道のりをmに直します。1 km = 1000 m。時間 = 道のり ÷ 速さ なので、1000 m ÷ 秒速 10 m = 100 秒。"},
-            # 速さ = 道のり ÷ 時間
-            {"q": "3 時間で 180 km 進んだ。このときの速さは 時速 なん km ？", "a": "時速 60 km", "exp": "速さ = 道のり ÷ 時間 です。180 km ÷ 3 時間 = 時速 60 km。"},
-            {"q": "5 分で 1 km 進んだ。このときの速さは 分速 なん m ？", "a": "分速 200 m", "exp": "まず道のりをmに直します。1 km = 1000 m。速さ = 道のり ÷ 時間 なので、1000 m ÷ 5 分 = 分速 200 m。"},
-            {"q": "10 秒で 100 m 走った。このときの速さは 秒速 なん m ？", "a": "秒速 10 m", "exp": "速さ = 道のり ÷ 時間 です。100 m ÷ 10 秒 = 秒速 10 m。"},
-            {"q": "分速 1.2 km は 時速 なん km ？", "a": "時速 72 km", "exp": "1分で1.2km進むので、60分（1時間）では 1.2 km × 60 = 72 km 進みます。だから時速72kmです。"},
-            {"q": "時速 18 km は 分速 なん m ？", "a": "分速 300 m", "exp": "時速18kmは、1時間（60分）で18000m進む速さです。なので、1分あたりでは 18000m ÷ 60分 = 300m/分。"},
-        ]
-    }
-}
+st.set_page_config(page_title="重要動詞＆群動詞マスター", layout="wide")
 
-# Streamlitアプリの開始
-st.set_page_config(page_title="単位換算ノート", layout="wide") # ページ設定
-st.title("小学生のための単位換算ノート ✏️")
+# --- Emojis for visual aid ---
+dictionary_icon = "📖"
+bulb_icon = "💡"
+warning_icon = "⚠️"
+pencil_icon = "✏️"
+star_icon = "⭐"
+graduation_cap_icon = "🎓"
+runner_icon = "🏃" # For phrasal verbs - verb + particle running together
 
-st.header("はじめに")
-st.write("""
-私たちの身の回りには、ものの長さや重さ、かさなどを表す「単位」がたくさんあります。
-例えば、えんぴつの長さを「cm (センチメートル)」で表したり、牛乳の量を「L (リットル)」で表したりしますね。
-大きな単位と小さな単位を自由に変えられるようになると、計算がしやすくなったり、ものの大きさを比べやすくなったりします。
-このノートで、いろいろな単位の換算をマスターしましょう！
+st.title(f"{dictionary_icon} 【中2・中3英語】重要動詞・群動詞マスター！")
+st.caption("基本動詞と群動詞を使いこなして、表現力をアップさせよう！")
+
+st.markdown("---")
+
+# --- 1. 基本動詞のチカラを知ろう！ ---
+st.header(f"{bulb_icon} 1. 基本動詞のチカラを知ろう！")
+st.markdown("""
+英語の基本動詞 (例: `take`, `get`, `make`, `have`, `look`) は、サッカーでいうパスやドリブルのようなもの。とっても基本的だけど、組み合わせ次第でたくさんの意味を表せるスーパーマンなんだ！
+いくつかの使い方を見てみよう。
 """)
 
-st.header("例題を見てみよう 💡")
-for unit_name, info in UNIT_INFO.items():
-    st.subheader(f"単位の種類: {unit_name} (基本単位: {info['基本単位']})")
-    if info["例"]:
-        for ex in info["例"]:
-            st.markdown(f"- {ex}")
-    else:
-        st.write("この単位の例題は準備中です。")
-    st.write("---")
+st.subheader("🔹 `take` の使い方")
+st.markdown("""
+* `take a picture` (写真を撮る): Can you **take a picture** of us?
+* `take a walk` (散歩する): Let's **take a walk** in the park.
+* `take care of ~` (～の世話をする): I **take care of** my dog.
+* `It takes (人) 時間 to do ~` (～するのに時間がかかる): **It took me** three hours **to finish** the homework.
+    * この `It takes ... to ...` の形は超重要！
+""")
+
+st.subheader("🔹 `make` の使い方")
+st.markdown("""
+* `make breakfast/lunch/dinner` (朝食/昼食/夕食を作る): My father sometimes **makes breakfast**.
+* `make a mistake` (間違いを犯す): Don't worry if you **make a mistake**.
+* `make A B` (AをBの状態にする): This song **makes me happy**. (この歌は私を幸せにする。)
+    * `make + 人/モノ + 形容詞/名詞` の形を覚えよう！
+""")
+
+st.subheader("🔹 `get` の使い方")
+st.markdown("""
+* `get to ~` (～に到着する): We **got to** the station at noon.
+* `get on / get off` (乗り物に乗る/降りる): I **get on** the bus at 7:30. / Please **get off** at the next stop.
+* `get up` (起きる): What time do you usually **get up**?
+* `get + 形容詞` (～の状態になる): It's **getting dark**. (暗くなってきた。)
+""")
+
+st.subheader("🔹 `have` の使い方")
+st.markdown("""
+* `have breakfast/lunch/dinner` (食事をとる): I **had lunch** with my friends.
+* `have a good time` (楽しい時を過ごす): We **had a good time** at the party.
+* `have to + 動詞の原形` (～しなければならない): You **have to** study hard. (助動詞のような働き)
+""")
+
+st.subheader("🔹 `look` の使い方")
+st.markdown("""
+* `look at ~` (～を(意識して)見る): **Look at** this picture!
+* `look + 形容詞` (～のように見える): You **look happy** today.
+* `look for ~` (～を探す): I'm **looking for** my keys. (これは群動詞でもあるよ！)
+""")
+
+st.markdown("---")
+
+# --- 2. 群動詞ってなかまだれ？ ---
+st.header(f"{runner_icon} 2. 群動詞 (Phrasal Verbs) ってなかまだれ？")
+st.markdown("""
+**群動詞**とは、「動詞 + 副詞」や「動詞 + 前置詞」がセットになって、まるで新しい一つの単語のように特別な意味を持つようになったものだよ。
+慣れるまでは少し大変だけど、使えるようになると表現がグッと豊かになる！セットで覚えよう！
+""")
+
+st.subheader("よく使う群動詞リスト")
+phrasal_verbs_data = {
+    "群動詞": [
+        "`look for ~`",
+        "`look after ~`",
+        "`look forward to ~ing`",
+        "`find out`",
+        "`give up`",
+        "`turn on` / `turn off`",
+        "`put on`",
+        "`call back`",
+        "`get along with ~`"
+    ],
+    "主な意味": [
+        "～を探す",
+        "～の世話をする (≒ take care of ~)",
+        "～するのを楽しみに待つ",
+        "～を見つけ出す、知る",
+        "あきらめる",
+        "（電気製品など）をつける / 消す",
+        "（衣服など）を身に着ける",
+        "電話をかけ直す",
+        "～と仲良くやる"
+    ],
+    "例文": [
+        "I'm **looking for** my lost cat.",
+        "She **looks after** her younger brother.",
+        "I'm **looking forward to seeing** you.",
+        "He **found out** the truth.",
+        "Never **give up** your dream!",
+        "Please **turn on** the TV. / Don't forget to **turn off** the lights.",
+        "It's cold. You should **put on** your coat.",
+        "I'll **call** you **back** later.",
+        "Do you **get along with** your classmates?"
+    ]
+}
+st.table(phrasal_verbs_data)
+st.markdown("特に `look forward to ~ing` の `-ing` に注意！ `to` が前置詞だからだよ。(詳しくはヒントで！)")
+
+st.markdown("---")
+
+# --- 3. 【発展】無生物主語の文 ---
+st.header(f"{bulb_icon} 3. 【発展】無生物主語の文に慣れよう！")
+st.markdown("""
+英語では、人だけでなく「モノ」や「コト」が主語になる文（無生物主語構文）がよく使われるよ。
+日本語に直訳すると不自然なこともあるけど、英語ではとても自然な表現なんだ。
+
+* 例1: **The news made us surprised.**
+    * 直訳：その知らせは私たちを驚かせた。
+    * 自然な日本語：その知らせを聞いて私たちは驚いた。
+* 例2: **This road takes you to the library.**
+    * 直訳：この道はあなたを図書館へ連れて行く。
+    * 自然な日本語：この道を行けば図書館に着きます。
+* 例3: **A short walk brought him to the park.**
+    * 直訳：短い散歩が彼を公園へ連れてきた。
+    * 自然な日本語：少し歩くと彼は公園に着いた。
+
+無生物主語の文に慣れると、英語のニュースや読み物が理解しやすくなるよ！
+""")
+
+st.markdown("---")
+
+# --- 4. 豆知識＆受験のヒント ---
+st.header(f"{graduation_cap_icon} 4. 豆知識＆受験のヒント")
+
+st.subheader(f"{star_icon} ヒント1：群動詞の目的語の位置（特に [動詞 + 副詞] タイプ）")
+st.markdown("""
+群動詞の中でも「動詞 + **副詞**」のタイプ (例: `turn on`, `put on`, `give up`) は、目的語の位置にルールがあるよ。
+1.  目的語が**名詞** (例: the TV, your coat) の場合：
+    * `turn on **the TV**` (動詞 + 副詞 + 目的語)  ⭕️
+    * `turn **the TV** on` (動詞 + 目的語 + 副詞)  ⭕️
+2.  目的語が**代名詞** (例: it, them, him, her) の場合：
+    * `turn **it** on` (動詞 + 目的語代名詞 + 副詞) ⭕️ **これだけ！**
+    * `turn on **it**` (動詞 + 副詞 + 目的語代名詞) ❌ ダメ！
+
+「動詞 + **前置詞**」のタイプ (例: `look for ~`, `listen to ~`) は、目的語は必ず前置詞の後に来るよ。(例: `look for **him**`)
+この区別はテストで狙われやすいから、しっかり覚えよう！
+""")
+
+st.subheader(f"{star_icon} ヒント2：「look forward to ~ing」の `to` は前置詞！")
+st.markdown("""
+`look forward to ~ing` (～するのを楽しみに待つ) の `to` は、不定詞の `to` (to + 動詞の原形) ではなく、**前置詞**なんだ。
+前置詞の後ろには名詞か動名詞 (`~ing`) が来るルールだから、`look forward to see you` (❌) ではなく、`look forward to **seeing** you` (⭕️) となるよ。
+これも超頻出ポイント！
+""")
+
+st.subheader(f"{star_icon} ヒント3：第5文型 (SVOC) を作る主な動詞")
+st.markdown("""
+「主語 + 動詞 + 目的語 + 補語」(S + V + O + C) の形で、「OをCの状態にする/呼ぶ/保つ」などの意味を表す文型だよ。
+この形をとる代表的な動詞を覚えておこう。
+* `make O C`: OをCの状態にする (例: The movie **made me sad**.)
+* `call O C`: OをCと呼ぶ (例: We **call him Ken**.)
+* `keep O C`: OをCの状態に保つ (例: Please **keep your room clean**.)
+* `find O C`: OがCだとわかる、気づく (例: I **found the book interesting**.)
+* `name O C`: OをCと名付ける (例: They **named their dog Pochi**.)
+SVOCは長文読解や英作文で重要だよ。
+""")
+
+st.markdown("---")
+
+# --- 5. 練習してみよう！ ---
+st.header(f"{pencil_icon} 5. 練習してみよう！")
+st.markdown("次の( )に適切な語句を選んだり、書き入れたりしてみよう。答えは「答えを見る」をクリック！")
+
+practice_questions_verbs = [
+    {
+        "q_type": "choice",
+        "question": "1. It (     ) me about an hour to get to school.",
+        "options": ["takes", "makes", "has", "looks"],
+        "answer_text": "`takes`\n解説: 「(人にとって)時間がかかる」は `It takes (人) 時間 to do ~` の形を使います。"
+    },
+    {
+        "q_type": "choice",
+        "question": "2. The coach's words (     ) the players confident.",
+        "options": ["looked", "called", "made", "got"],
+        "answer_text": "`made`\n解説: 「AをBの状態にする」は `make A B` (SVOC) の形です。「コーチの言葉は選手たちを自信がある状態にした」という意味。"
+    },
+    {
+        "q_type": "choice",
+        "question": "3. I am really looking forward to (     ) you this summer.",
+        "options": ["see", "seeing", "saw", "be seen"],
+        "answer_text": "`seeing`\n解説: `look forward to ~ing` で「～するのを楽しみに待つ」。この `to` は前置詞なので、後ろは動名詞(-ing形)です。"
+    },
+    {
+        "q_type": "fill_in",
+        "question": "4. Can you (     ) (     ) the music? It's too loud.",
+        "pre_answer": "turn down",
+        "answer_text": "`turn down`\n解説: 「音量などを下げる」は `turn down` です。 `turn the music down` もOK。"
+    },
+    {
+        "q_type": "fill_in_choice",
+        "question": "5. My grandmother always (     ) care (     ) our cat when we are away.",
+        "pre_answer": "takes / of",
+        "answer_text": "`takes` / `of`\n解説: `take care of ~` で「～の世話をする」という意味の重要な群動詞です。"
+    },
+    {
+        "q_type": "choice",
+        "question": "6. He promised to call me back, but he never (     ).",
+        "options": ["did", "does", "called", "made"],
+        "answer_text": "`did`\n解説: 「彼は決して電話をかけ直さなかった」という意味。文脈から `call me back` の内容を `did` (しなかった) で受けています。 `He never called me back.` とも言えますが、選択肢からは `did` が適切。"
+    },
+    {
+        "q_type": "fill_in",
+        "question": "7. Please (     ) your shoes (     ) before entering the house. (靴を脱いでください)",
+        "pre_answer": "take / off",
+        "answer_text": "`take` / `off`\n解説: `take off ~` で「(衣服など)を脱ぐ」という意味です。`take your shoes off` の語順。"
+    }
+]
+
+for i, item in enumerate(practice_questions_verbs):
+    st.subheader(f"問題 {i+1}")
+    if item["q_type"] == "choice":
+        st.write(item["question"])
+        answer = st.radio("選択肢:", item["options"], key=f"q{i}_verbs", label_visibility="collapsed")
+        with st.expander("答えを見る"):
+            st.markdown(f"**正解:** {item['options'][item['options'].index(item['answer_text'].splitlines()[0]) if item['answer_text'].splitlines()[0] in item['options'] else 'エラー'}") # ちょっと複雑ですが、選択肢から正解を選んで表示
+            st.markdown(item["answer_text"].splitlines()[-1]) # 解説のみ表示
+    elif item["q_type"] == "fill_in":
+        user_input = st.text_input(item["question"], key=f"q{i}_verbs_fill")
+        with st.expander("答えを見る"):
+            st.markdown(f"**正解:** {item['pre_answer']}")
+            st.markdown(item["answer_text"])
+    elif item["q_type"] == "fill_in_choice": # 2つの穴埋めの場合
+        cols = st.columns(2)
+        with cols[0]:
+            user_input1 = st.text_input(item["question"].split("( )")[0] + " (     ) " + item["question"].split("( )")[1].split(" ( )")[0], key=f"q{i}_verbs_fill1")
+        with cols[1]:
+            user_input2 = st.text_input(" (     ) " + item["question"].split("( )")[-1], key=f"q{i}_verbs_fill2")
+
+        with st.expander("答えを見る"):
+            ans_parts = item["pre_answer"].split(" / ")
+            st.markdown(f"**正解:** 1つ目の( ) `{ans_parts[0]}`  2つ目の( ) `{ans_parts[1]}`")
+            st.markdown(item["answer_text"])
 
 
-# 練習問題セクションの作成
-st.header("れんしゅうもんだいを やってみよう！ ✍️")
-st.write("もんだいの下の▼をクリックすると、こたえとかいせつが見られるよ。")
+st.markdown("---")
+st.success("たくさんの動詞や表現が出てきたね！一つ一つ例文と一緒に覚えて、使えるように練習しよう！ 💪")
 
-# 各単位カテゴリごとに問題と解答解説を表示
-for unit_name, info in UNIT_INFO.items():
-    st.subheader(f"{unit_name} の問題")
-
-    if not info["問題"]:
-        st.write("この単位の問題は準備中です。")
-        st.write("---")
-        continue
-
-    cols = st.columns(2) # 問題を2列に表示（見栄えのため）
-    col_index = 0
-
-    for i, q_data in enumerate(info["問題"]):
-        with cols[col_index % 2]: # 問題を左右交互に配置
-            st.markdown(f"**問 {i+1}: {q_data['q']}**")
-            with st.expander("こたえ と かいせつを見る"):
-                st.markdown(f"**こたえ:** {q_data['a']}")
-                st.markdown(f"**かいせつ:** {q_data['exp']}")
-            st.markdown("---") # 各問題の区切り線
-        col_index += 1
-    st.write("---") # カテゴリの区切り線
-
-st.sidebar.header("単位換算ノートについて")
-st.sidebar.info(
-    "このアプリは、小学生が単位換算を楽しく学べるように作られました。\n\n"
-    "たくさんの問題を解いて、単位博士を目指そう！\n\n"
-    "問題はどんどん追加していく予定です。"
-)
-
-st.sidebar.markdown("---")
-st.sidebar.write("作成: Google Gemini")
