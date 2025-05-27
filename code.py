@@ -180,23 +180,23 @@ practice_questions_verbs = [
         "q_type": "choice",
         "question": "1. It (     ) me about an hour to get to school.",
         "options": ["takes", "makes", "has", "looks"],
-        "answer_text": "`takes`\n解説: 「(人にとって)時間がかかる」は `It takes (人) 時間 to do ~` の形を使います。"
+        "answer_text": "takes\n解説: 「(人にとって)時間がかかる」は `It takes (人) 時間 to do ~` の形を使います。"
     },
     {
         "q_type": "choice",
         "question": "2. The coach's words (     ) the players confident.",
         "options": ["looked", "called", "made", "got"],
-        "answer_text": "`made`\n解説: 「AをBの状態にする」は `make A B` (SVOC) の形です。「コーチの言葉は選手たちを自信がある状態にした」という意味。"
+        "answer_text": "made\n解説: 「AをBの状態にする」は `make A B` (SVOC) の形です。「コーチの言葉は選手たちを自信がある状態にした」という意味。"
     },
     {
         "q_type": "choice",
         "question": "3. I am really looking forward to (     ) you this summer.",
         "options": ["see", "seeing", "saw", "be seen"],
-        "answer_text": "`seeing`\n解説: `look forward to ~ing` で「～するのを楽しみに待つ」。この `to` は前置詞なので、後ろは動名詞(-ing形)です。"
+        "answer_text": "seeing\n解説: `look forward to ~ing` で「～するのを楽しみに待つ」。この `to` は前置詞なので、後ろは動名詞(-ing形)です。"
     },
     {
         "q_type": "fill_in",
-        "question": "4. Can you (     ) (     ) the music? It's too loud.",
+        "question": "4. Can you (     ) (     ) the music? It's too loud. (音楽の音量を下げてくれますか？)", # Clarified meaning
         "pre_answer": "turn down",
         "answer_text": "`turn down`\n解説: 「音量などを下げる」は `turn down` です。 `turn the music down` もOK。"
     },
@@ -210,7 +210,7 @@ practice_questions_verbs = [
         "q_type": "choice",
         "question": "6. He promised to call me back, but he never (     ).",
         "options": ["did", "does", "called", "made"],
-        "answer_text": "`did`\n解説: 「彼は決して電話をかけ直さなかった」という意味。文脈から `call me back` の内容を `did` (しなかった) で受けています。 `He never called me back.` とも言えますが、選択肢からは `did` が適切。"
+        "answer_text": "did\n解説: 「彼は決して電話をかけ直さなかった」という意味。文脈から `call me back` の内容を `did` (しなかった) で受けています。 `He never called me back.` とも言えますが、選択肢からは `did` が適切。"
     },
     {
         "q_type": "fill_in",
@@ -226,19 +226,33 @@ for i, item in enumerate(practice_questions_verbs):
         st.write(item["question"])
         answer = st.radio("選択肢:", item["options"], key=f"q{i}_verbs", label_visibility="collapsed")
         with st.expander("答えを見る"):
-            st.markdown(f"**正解:** {item['options'][item['options'].index(item['answer_text'].splitlines()[0]) if item['answer_text'].splitlines()[0] in item['options'] else 'エラー'}") # ちょっと複雑ですが、選択肢から正解を選んで表示
-            st.markdown(item["answer_text"].splitlines()[-1]) # 解説のみ表示
+            # 修正箇所: 正解の選択肢と解説を分けて表示
+            correct_answer_option = item["answer_text"].splitlines()[0]
+            explanation = "\n".join(item["answer_text"].splitlines()[1:])
+            st.markdown(f"**正解:** {correct_answer_option}")
+            if explanation:
+                st.markdown(explanation)
+            
     elif item["q_type"] == "fill_in":
-        user_input = st.text_input(item["question"], key=f"q{i}_verbs_fill")
+        user_input = st.text_input(item["question"], key=f"q{i}_verbs_fill") # ユーザー入力欄
         with st.expander("答えを見る"):
             st.markdown(f"**正解:** {item['pre_answer']}")
-            st.markdown(item["answer_text"])
+            st.markdown(item["answer_text"]) # こちらは pre_answer を含んだ解説でもOK
+            
     elif item["q_type"] == "fill_in_choice": # 2つの穴埋めの場合
+        question_parts = item["question"].split("(     )")
+        if len(question_parts) < 3 : # Ensure there are at least two blanks
+            question_parts.append("") # Add a placeholder if not
+            question_parts.append("")
+
         cols = st.columns(2)
         with cols[0]:
-            user_input1 = st.text_input(item["question"].split("( )")[0] + " (     ) " + item["question"].split("( )")[1].split(" ( )")[0], key=f"q{i}_verbs_fill1")
+            user_input1 = st.text_input(question_parts[0] + " (     ) " + question_parts[1], key=f"q{i}_verbs_fill1")
         with cols[1]:
-            user_input2 = st.text_input(" (     ) " + item["question"].split("( )")[-1], key=f"q{i}_verbs_fill2")
+             # Check if question_parts[2] exists
+            second_blank_text = question_parts[2] if len(question_parts) > 2 else ""
+            user_input2 = st.text_input(" (     ) " + second_blank_text, key=f"q{i}_verbs_fill2")
+
 
         with st.expander("答えを見る"):
             ans_parts = item["pre_answer"].split(" / ")
